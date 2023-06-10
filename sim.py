@@ -8,6 +8,9 @@ pygame.init()
 width = 800
 height = 600
 
+# Tamaño inicial del grifo de salida (porcentaje del tamaño del grifo)
+orificio_size = 10
+
 # Crear la ventana
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Juego del llenado y vaciado de un tanque rectangular")
@@ -44,6 +47,38 @@ orificio_size = 10
 # Partículas
 particles = []
 
+# Función para crear un botón
+def create_button(rect, color, text, font, action):
+    button = {
+        "rect": rect,
+        "color": color,
+        "text": text,
+        "font": font,
+        "action": action
+    }
+    return button
+
+# Función para dibujar un botón en la pantalla
+def draw_button(button):
+    pygame.draw.rect(screen, button["color"], button["rect"])
+    text_surface = button["font"].render(button["text"], True, BLACK)
+    text_rect = text_surface.get_rect(center=button["rect"].center)
+    screen.blit(text_surface, text_rect)
+
+# Función para cambiar el tamaño del grifo de salida y la velocidad de vaciado
+def change_orificio_size(increment):
+    global orificio_size, empty_speed
+    orificio_size += increment
+    orificio_size = max(0, min(100, orificio_size))  # Limitar el tamaño del grifo entre 0 y 100
+    empty_speed = orificio_size / 10  # Ajustar la velocidad de vaciado según el tamaño del grifo
+
+# Botones
+font = pygame.font.SysFont(None, 24)
+
+button_width_increase = create_button(pygame.Rect(10, 80, 100, 50), BLUE, "+", font, lambda: change_orificio_size(10))
+button_width_decrease = create_button(pygame.Rect(10, 140, 100, 50), BLUE, "-", font, lambda: change_orificio_size(-10))
+
+
 class Particle:
     def __init__(self, x, y, speed, color):
         self.x = x
@@ -79,6 +114,13 @@ while running:
                 liquid_level = 0.0
                 fill_speed = 1.0
                 particles = []
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:  # Clic izquierdo
+                pos = pygame.mouse.get_pos()
+                if button_width_increase["rect"].collidepoint(pos):
+                    button_width_increase["action"]()
+                elif button_width_decrease["rect"].collidepoint(pos):
+                    button_width_decrease["action"]()
 
     # Incrementar el nivel del líquido automáticamente
     if liquid_level < 100.0:
@@ -111,6 +153,10 @@ while running:
         particles.append(particle)
     # Renderizar elementos gráficos
     screen.fill(WHITE)
+
+    # Dibujar los botones
+    draw_button(button_width_increase)
+    draw_button(button_width_decrease)
 
     # Dibujar el tanque
     pygame.draw.rect(screen, BLUE, (tank_x, tank_y + tank_height - tank_height * liquid_level / 100.0, tank_width, tank_height * liquid_level / 100.0))
