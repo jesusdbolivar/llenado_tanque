@@ -45,15 +45,15 @@ orificio_size = 10
 particles = []
 
 class Particle:
-    def __init__(self, x, y, speed):
+    def __init__(self, x, y, speed, color):
         self.x = x
         self.y = y
         self.speed = speed
         self.radius = random.randint(1, 5)
-        self.color = BLUE
+        self.color = color
 
     def update(self):
-        self.y -= self.speed
+        self.y += self.speed
 
     def draw(self):
         pygame.draw.circle(screen, self.color, (int(self.x), int(self.y)), self.radius)
@@ -85,17 +85,30 @@ while running:
         liquid_level += fill_speed / 100.0  # Dividir por 100 para ajustar el porcentaje a la escala de 0 a 1
         liquid_level = min(100.0, liquid_level)  # Limitar el nivel de líquido a 100
 
-        # Crear nuevas partículas
-        if random.random() < fill_speed / 100.0:
-            particle_x = random.uniform(tank_x, tank_x + tank_width)
-            particle_y = tank_y + tank_height
-            particle_speed = random.uniform(1, 5)
-            particle = Particle(particle_x, particle_y, particle_speed)
-            particles.append(particle)
+        # Crear nuevas partículas para simular el chorro de agua
+    if random.random() < empty_speed / 100.0:
+        particle_x = random.uniform(orificio_x, orificio_x + orificio_width)
+        particle_y = tank_y + tank_height
+        particle_speed = random.uniform(1, 5)
+        particle_color = RED  # Color rojo para el chorro de agua
+        particle = Particle(particle_x, particle_y, particle_speed, particle_color)
+        particles.append(particle)
+
+    # Decrementar el nivel del líquido si el tanque no está vacío
+    if liquid_level > 0.0:
+        liquid_level -= empty_speed / 100.0  # Dividir por 100 para ajustar el porcentaje a la escala de 0 a 1
+        liquid_level = max(0.0, liquid_level)  # Limitar el nivel de líquido a 0
 
     # Eliminar partículas fuera de la pantalla
     particles = [particle for particle in particles if particle.y > 0]
 
+    # Crear nuevas partículas para simular el chorro de agua
+    if random.random() < empty_speed / 100.0:
+        particle_x = random.uniform(orificio_x, orificio_x + orificio_width)
+        particle_y = tank_y + tank_height
+        particle_speed = random.uniform(1, 5)
+        particle = Particle(particle_x, particle_y, particle_speed, RED)  # Cambiar el color a rojo para el chorro de agua
+        particles.append(particle)
     # Renderizar elementos gráficos
     screen.fill(WHITE)
 
@@ -108,12 +121,12 @@ while running:
     # Dibujar el grifo de entrada
     grifo_width = tank_width * grifo_size / 100.0
     grifo_x = tank_x + (tank_width - grifo_width) / 2.0
-    pygame.draw.rect(screen, RED, (grifo_x, tank_y, grifo_width, 10))
+    pygame.draw.rect(screen, BLUE, (grifo_x, tank_y, grifo_width, 10))
 
     # Dibujar el orificio de salida
     orificio_width = grifo_width * orificio_size / 100.0
     orificio_x = grifo_x + (grifo_width - orificio_width) / 2.0
-    pygame.draw.rect(screen, BLACK, (orificio_x, tank_y, orificio_width, 10))
+    pygame.draw.rect(screen, BLUE, (orificio_x, tank_y + tank_height, orificio_width, 10))
 
     # Dibujar partículas
     for particle in particles:
