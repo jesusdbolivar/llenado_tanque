@@ -1,5 +1,5 @@
 import pygame
-import math
+import random
 
 # Inicializar Pygame
 pygame.init()
@@ -37,6 +37,23 @@ empty_speed = 5
 # Tamaño del grifo de salida (porcentaje del ancho del tanque)
 grifo_size = 20
 
+# Partículas
+particles = []
+
+class Particle:
+    def __init__(self, x, y, speed):
+        self.x = x
+        self.y = y
+        self.speed = speed
+        self.radius = random.randint(1, 5)
+        self.color = BLUE
+
+    def update(self):
+        self.y += self.speed
+
+    def draw(self):
+        pygame.draw.circle(screen, self.color, (int(self.x), int(self.y)), self.radius)
+
 # Bucle principal del juego
 running = True
 while running:
@@ -56,6 +73,21 @@ while running:
         liquid_level -= empty_rate * 0.01  # 0.01 para ajustar el porcentaje a la escala de 0 a 1
         liquid_level = max(0, liquid_level)  # Limitar el nivel de líquido a 0
 
+        # Crear nuevas partículas
+        for _ in range(random.randint(1, 5)):
+            particle_x = random.uniform(tank_x, tank_x + tank_width)
+            particle_y = tank_y + tank_height
+            particle_speed = random.uniform(1, 5) * (liquid_level / 100)
+            particle = Particle(particle_x, particle_y, particle_speed)
+            particles.append(particle)
+
+    # Actualizar partículas
+    for particle in particles:
+        particle.update()
+
+    # Eliminar partículas que hayan salido de la pantalla
+    particles = [particle for particle in particles if particle.y < height]
+
     # Renderizar elementos gráficos
     screen.fill(WHITE)
 
@@ -69,6 +101,10 @@ while running:
     grifo_width = tank_width * grifo_size / 100
     grifo_x = tank_x + (tank_width - grifo_width) / 2
     pygame.draw.rect(screen, RED, (grifo_x, tank_y, grifo_width, 10))
+
+    # Dibujar partículas
+    for particle in particles:
+        particle.draw()
 
     # Actualizar la pantalla
     pygame.display.flip()
