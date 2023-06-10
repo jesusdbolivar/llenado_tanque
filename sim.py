@@ -75,8 +75,8 @@ def change_orificio_size(increment):
 # Botones
 font = pygame.font.SysFont(None, 24)
 
-button_width_increase = create_button(pygame.Rect(10, 80, 100, 50), BLUE, "+", font, lambda: change_orificio_size(10))
-button_width_decrease = create_button(pygame.Rect(10, 140, 100, 50), BLUE, "-", font, lambda: change_orificio_size(-10))
+button_width_increase = create_button(pygame.Rect(10, 80, 100, 50), RED, "+", font, lambda: change_orificio_size(10))
+button_width_decrease = create_button(pygame.Rect(10, 140, 100, 50), RED, "-", font, lambda: change_orificio_size(-10))
 
 
 class Particle:
@@ -132,7 +132,7 @@ while running:
         particle_x = random.uniform(orificio_x, orificio_x + orificio_width)
         particle_y = tank_y + tank_height
         particle_speed = random.uniform(1, 5)
-        particle_color = RED  # Color rojo para el chorro de agua
+        particle_color = BLUE  # Color rojo para el chorro de agua
         particle = Particle(particle_x, particle_y, particle_speed, particle_color)
         particles.append(particle)
 
@@ -149,7 +149,7 @@ while running:
         particle_x = random.uniform(orificio_x, orificio_x + orificio_width)
         particle_y = tank_y + tank_height
         particle_speed = random.uniform(1, 5)
-        particle = Particle(particle_x, particle_y, particle_speed, RED)  # Cambiar el color a rojo para el chorro de agua
+        particle = Particle(particle_x, particle_y, particle_speed, BLUE)  # Cambiar el color a rojo para el chorro de agua
         particles.append(particle)
     # Renderizar elementos gráficos
     screen.fill(WHITE)
@@ -184,6 +184,21 @@ while running:
     instructions_text = font.render("Presiona UP para acelerar, DOWN para ralentizar, R para reiniciar", True, BLACK)
     screen.blit(speed_text, (10, 10))
     screen.blit(instructions_text, (10, 40))
+
+   # Mostrar las variables en pantalla
+    liquid_level_text = font.render("Nivel de llenado: {}%".format(round(liquid_level, 2)), True, BLACK)
+    grifo_size_text = font.render("Tamaño del grifo: {}%".format(grifo_size), True, BLACK)
+    orificio_size_text = font.render("Tamaño del orificio: {}%".format(orificio_size), True, BLACK)
+
+    # Ajustar las coordenadas x para alinear a la derecha
+    liquid_level_x = width - liquid_level_text.get_width() - 10
+    grifo_size_x = width - grifo_size_text.get_width() - 10
+    orificio_size_x = width - orificio_size_text.get_width() - 10
+
+    # Renderizar las variables en pantalla
+    screen.blit(liquid_level_text, (liquid_level_x, 70))
+    screen.blit(grifo_size_text, (grifo_size_x, 100))
+    screen.blit(orificio_size_text, (orificio_size_x, 130))
 
     # Actualizar la pantalla
     pygame.display.flip()
