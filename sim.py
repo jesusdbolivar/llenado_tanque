@@ -96,9 +96,12 @@ class Particle:
 # Fuente de texto
 font = pygame.font.Font(None, 24)
 
+start_time = 0.0
+
 # Bucle principal del juego
 running = True
 while running:
+    elapsed_time = pygame.time.get_ticks() / 1000.0 - start_time
     # Manejo de eventos
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -127,7 +130,11 @@ while running:
         liquid_level += fill_speed / 100.0  # Dividir por 100 para ajustar el porcentaje a la escala de 0 a 1
         liquid_level = min(100.0, liquid_level)  # Limitar el nivel de líquido a 100
 
-        # Crear nuevas partículas para simular el chorro de agua
+    if start_time is 0.0 and liquid_level >= 100.0:        
+        start_time = pygame.time.get_ticks() / 1000.0  # Obtener el tiempo actual en segundos
+
+
+    # Crear nuevas partículas para simular el chorro de agua
     if random.random() < empty_speed / 100.0:
         particle_x = random.uniform(orificio_x, orificio_x + orificio_width)
         particle_y = tank_y + tank_height
@@ -189,6 +196,8 @@ while running:
     liquid_level_text = font.render("Nivel de llenado: {}%".format(round(liquid_level, 2)), True, BLACK)
     grifo_size_text = font.render("Tamaño del grifo: {}%".format(grifo_size), True, BLACK)
     orificio_size_text = font.render("Tamaño del orificio: {}%".format(orificio_size), True, BLACK)
+    elapsed_time_text = font.render("Tiempo transcurrido: {:.2f} segundos".format(elapsed_time), True, BLACK)
+    screen.blit(elapsed_time_text, (10, 160))
 
     # Ajustar las coordenadas x para alinear a la derecha
     liquid_level_x = width - liquid_level_text.get_width() - 10
@@ -202,6 +211,5 @@ while running:
 
     # Actualizar la pantalla
     pygame.display.flip()
-
 # Salir del juego
 pygame.quit()
