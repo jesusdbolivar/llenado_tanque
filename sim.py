@@ -1,5 +1,6 @@
 import pygame
 import random
+import matplotlib.pyplot as plt
 
 # Inicializar Pygame
 pygame.init()
@@ -54,6 +55,10 @@ orificio_size = 10
 
 # Partículas
 particles = []
+
+# Variables para la gráfica
+time_values = []
+liquid_level_values = []
 
 # Función para crear un botón
 def create_button(rect, color, text, font, action):
@@ -143,6 +148,8 @@ while running:
                 liquid_level = 0.0
                 fill_speed = 1.0
                 particles = []
+                time_values = []
+                liquid_level_values = []
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:  # Clic izquierdo
                 pos = pygame.mouse.get_pos()
@@ -183,6 +190,10 @@ while running:
     # Eliminar partículas fuera de la pantalla
     particles = [particle for particle in particles if particle.y > 0]
 
+    # Guardar los valores de tiempo y nivel de líquido para la gráfica
+    time_values.append(elapsed_time)
+    liquid_level_values.append(liquid_level)
+
     # Renderizar elementos gráficos
     screen.fill(WHITE)
 
@@ -222,19 +233,19 @@ while running:
 
     # Mostrar la velocidad de llenado actual y las instrucciones
     speed_text = font.render("Velocidad de llenado: {}% por segundo".format(fill_speed), True, BLACK)
-    instructions_text = font.render("Presiona UP para acelerar, DOWN para ralentizar, R para reiniciar", True, BLACK)
     screen.blit(speed_text, (10, 10))
+    instructions_text = font.render("Presiona 'UP' para aumentar la velocidad y 'DOWN' para disminuirla", True, BLACK)
     screen.blit(instructions_text, (10, 40))
 
-    # Mostrar las variables en pantalla
-    liquid_level_text = font.render("Nivel de llenado: {}%".format(round(liquid_level, 2)), True, BLACK)
-    grifo_size_text = font.render("Tamaño del grifo: {}%".format(grifo_size), True, BLACK)
-    orificio_size_text = font.render("Tamaño del orificio: {}%".format(orificio_size), True, BLACK)
-    screen.blit(liquid_level_text, (10, height - 80))
-    screen.blit(grifo_size_text, (10, height - 60))
-    screen.blit(orificio_size_text, (10, height - 40))
-
+    # Actualizar la pantalla
     pygame.display.flip()
 
-# Salir del juego
+# Cerrar Pygame
 pygame.quit()
+
+# Mostrar la gráfica de llenado del tanque en función del tiempo
+plt.plot(time_values, liquid_level_values)
+plt.xlabel("Tiempo (segundos)")
+plt.ylabel("Nivel de líquido (%)")
+plt.title("Llenado del tanque en función del tiempo")
+plt.show()
