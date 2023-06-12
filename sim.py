@@ -8,16 +8,17 @@ pygame.init()
 width = 800
 height = 600
 
-# Tamaño inicial del grifo de salida (porcentaje del tamaño del grifo)
-orificio_size = 10
-
 # Crear la ventana
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Juego del llenado y vaciado de un tanque rectangular")
 
+water_density = 1000
+oil_density = 800
+
 # Colores
 WHITE = (255, 255, 255)
 BLUE = (0, 0, 255)
+YELLOW = (255, 255, 0)
 RED = (255, 0, 0)
 BLACK = (0, 0, 0)
 
@@ -31,6 +32,13 @@ tank_height = height // 2
 
 # Nivel de líquido actual (porcentaje)
 liquid_level = 0.0
+
+# Altura del agua y del aceite
+water_height = (liquid_level / 100.0) * tank_height
+oil_height = (liquid_level / 100.0) * tank_height
+
+# Densidad del aceite en comparación con el agua
+oil_height = water_height * (water_density / oil_density)
 
 # Velocidad de llenado del tanque (porcentaje por segundo)
 fill_speed = 1.0
@@ -72,11 +80,28 @@ def change_orificio_size(increment):
     orificio_size = max(0, min(100, orificio_size))  # Limitar el tamaño del grifo entre 0 y 100
     empty_speed = orificio_size / 10  # Ajustar la velocidad de vaciado según el tamaño del grifo
 
+# Función para cambiar el tipo de líquido actual
+def set_current_liquid(liquid_type):
+    global current_liquid
+    current_liquid = liquid_type
+
+    # Ajustar el color del botón según el líquido seleccionado
+    if current_liquid == 0:
+        button_water["color"] = BLUE
+        button_oil["color"] = RED
+    else:
+        button_water["color"] = RED
+        button_oil["color"] = YELLOW
+
 # Botones
 font = pygame.font.SysFont(None, 24)
 
+current_liquid = 0;
+
 button_width_increase = create_button(pygame.Rect(10, 80, 100, 50), RED, "+", font, lambda: change_orificio_size(10))
 button_width_decrease = create_button(pygame.Rect(10, 140, 100, 50), RED, "-", font, lambda: change_orificio_size(-10))
+button_water = create_button(pygame.Rect(10, 200, 100, 50), BLUE, "Agua", font, lambda: set_current_liquid(0))
+button_oil = create_button(pygame.Rect(10, 260, 100, 50), RED, "Aceite", font, lambda: set_current_liquid(1))
 
 overflow = False
 
@@ -125,6 +150,10 @@ while running:
                     button_width_increase["action"]()
                 elif button_width_decrease["rect"].collidepoint(pos):
                     button_width_decrease["action"]()
+                elif button_water["rect"].collidepoint(pos):
+                    button_water["action"]()
+                elif button_oil["rect"].collidepoint(pos):
+                    button_oil["action"]()
 
     # Incrementar el nivel del líquido automáticamente
     if liquid_level < 100.0:
@@ -134,9 +163,8 @@ while running:
         if liquid_level == 100.0:
             overflow = True
 
-    if start_time is 0.0 and liquid_level >= 100.0:        
+    if start_time == 0.0 and liquid_level >= 100.0:
         start_time = pygame.time.get_ticks() / 1000.0  # Obtener el tiempo actual en segundos
-
 
     # Crear nuevas partículas para simular el chorro de agua
     if random.random() < empty_speed / 100.0:
@@ -155,25 +183,23 @@ while running:
     # Eliminar partículas fuera de la pantalla
     particles = [particle for particle in particles if particle.y > 0]
 
-    # Crear nuevas partículas para simular el chorro de agua
-    if random.random() < empty_speed / 100.0:
-        particle_x = random.uniform(orificio_x, orificio_x + orificio_width)
-        particle_y = tank_y + tank_height
-        particle_speed = random.uniform(1, 5)
-        particle = Particle(particle_x, particle_y, particle_speed, BLUE)  # Cambiar el color a rojo para el chorro de agua
-        particles.append(particle)
     # Renderizar elementos gráficos
     screen.fill(WHITE)
 
     # Dibujar los botones
     draw_button(button_width_increase)
     draw_button(button_width_decrease)
+    draw_button(button_water)
+    draw_button(button_oil)
 
     # Dibujar el tanque
     if overflow:
         pygame.draw.rect(screen, RED, (tank_x, tank_y + tank_height - tank_height * liquid_level / 100.0, tank_width, tank_height * liquid_level / 100.0))
     else:
-        pygame.draw.rect(screen, BLUE, (tank_x, tank_y + tank_height - tank_height * liquid_level / 100.0, tank_width, tank_height * liquid_level / 100.0))
+        if current_liquid == 0:
+            pygame.draw.rect(screen, BLUE, (tank_x, tank_y + tank_height - tank_height * liquid_level / 100.0, tank_width, tank_height * liquid_level / 100.0))
+        else:
+            pygame.draw.rect(screen, YELLOW, (tank_x, tank_y + tank_height - tank_height * liquid_level / 100.0, tank_width, tank_height * liquid_level / 100.0))
 
     # Dibujar el contorno del tanque
     pygame.draw.rect(screen, BLUE, (tank_x, tank_y, tank_width, tank_height), 2)
@@ -186,7 +212,8 @@ while running:
     # Dibujar el orificio de salida
     orificio_width = grifo_width * orificio_size / 100.0
     orificio_x = grifo_x + (grifo_width - orificio_width) / 2.0
-    pygame.draw.rect(screen, BLUE, (orificio_x, tank_y + tank_height, orificio_width, 10))
+    pygame.draw.rect(screen, BLUE, (tank_x, tank_y + tank_height - water_height, tank_width, water_height))
+    pygame.draw.rect(screen, YELLOW, (tank_x, tank_y + tank_height - oil_height, tank_width, oil_height))
 
     # Dibujar partículas
     for particle in particles:
@@ -199,24 +226,15 @@ while running:
     screen.blit(speed_text, (10, 10))
     screen.blit(instructions_text, (10, 40))
 
-   # Mostrar las variables en pantalla
+    # Mostrar las variables en pantalla
     liquid_level_text = font.render("Nivel de llenado: {}%".format(round(liquid_level, 2)), True, BLACK)
     grifo_size_text = font.render("Tamaño del grifo: {}%".format(grifo_size), True, BLACK)
     orificio_size_text = font.render("Tamaño del orificio: {}%".format(orificio_size), True, BLACK)
-    elapsed_time_text = font.render("Tiempo transcurrido: {:.2f} segundos".format(elapsed_time), True, BLACK)
-    screen.blit(elapsed_time_text, (10, 160))
+    screen.blit(liquid_level_text, (10, height - 80))
+    screen.blit(grifo_size_text, (10, height - 60))
+    screen.blit(orificio_size_text, (10, height - 40))
 
-    # Ajustar las coordenadas x para alinear a la derecha
-    liquid_level_x = width - liquid_level_text.get_width() - 10
-    grifo_size_x = width - grifo_size_text.get_width() - 10
-    orificio_size_x = width - orificio_size_text.get_width() - 10
-
-    # Renderizar las variables en pantalla
-    screen.blit(liquid_level_text, (liquid_level_x, 70))
-    screen.blit(grifo_size_text, (grifo_size_x, 100))
-    screen.blit(orificio_size_text, (orificio_size_x, 130))
-
-    # Actualizar la pantalla
     pygame.display.flip()
+
 # Salir del juego
 pygame.quit()
