@@ -78,6 +78,7 @@ font = pygame.font.SysFont(None, 24)
 button_width_increase = create_button(pygame.Rect(10, 80, 100, 50), RED, "+", font, lambda: change_orificio_size(10))
 button_width_decrease = create_button(pygame.Rect(10, 140, 100, 50), RED, "-", font, lambda: change_orificio_size(-10))
 
+overflow = False
 
 class Particle:
     def __init__(self, x, y, speed, color):
@@ -129,6 +130,9 @@ while running:
     if liquid_level < 100.0:
         liquid_level += fill_speed / 100.0  # Dividir por 100 para ajustar el porcentaje a la escala de 0 a 1
         liquid_level = min(100.0, liquid_level)  # Limitar el nivel de líquido a 100
+        overflow = False
+        if liquid_level == 100.0:
+            overflow = True
 
     if start_time is 0.0 and liquid_level >= 100.0:        
         start_time = pygame.time.get_ticks() / 1000.0  # Obtener el tiempo actual en segundos
@@ -166,7 +170,10 @@ while running:
     draw_button(button_width_decrease)
 
     # Dibujar el tanque
-    pygame.draw.rect(screen, BLUE, (tank_x, tank_y + tank_height - tank_height * liquid_level / 100.0, tank_width, tank_height * liquid_level / 100.0))
+    if overflow:
+        pygame.draw.rect(screen, RED, (tank_x, tank_y + tank_height - tank_height * liquid_level / 100.0, tank_width, tank_height * liquid_level / 100.0))
+    else:
+        pygame.draw.rect(screen, BLUE, (tank_x, tank_y + tank_height - tank_height * liquid_level / 100.0, tank_width, tank_height * liquid_level / 100.0))
 
     # Dibujar el contorno del tanque
     pygame.draw.rect(screen, BLUE, (tank_x, tank_y, tank_width, tank_height), 2)
