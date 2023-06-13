@@ -132,7 +132,7 @@ start_time = 0.0
 # Bucle principal del juego
 running = True
 while running:
-    elapsed_time = pygame.time.get_ticks() / 1000.0 - start_time
+    elapsed_time = pygame.time.get_ticks() / 1000.0 
     # Manejo de eventos
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -233,9 +233,24 @@ while running:
 
     # Mostrar la velocidad de llenado actual y las instrucciones
     speed_text = font.render("Velocidad de llenado: {}% por segundo".format(fill_speed), True, BLACK)
+    instructions_text = font.render("Presiona UP para acelerar, DOWN para ralentizar, R para reiniciar", True, BLACK)
     screen.blit(speed_text, (10, 10))
-    instructions_text = font.render("Presiona 'UP' para aumentar la velocidad y 'DOWN' para disminuirla", True, BLACK)
     screen.blit(instructions_text, (10, 40))
+
+   # Mostrar las variables en pantalla
+    liquid_level_text = font.render("Nivel de llenado: {}%".format(round(liquid_level, 2)), True, BLACK)
+    orificio_size_text = font.render("Tamaño del orificio: {}%".format(orificio_size), True, BLACK)
+    elapsed_time_text = font.render("Tiempo transcurrido: {:.2f} segundos".format(elapsed_time), True, BLACK)
+
+    # Ajustar las coordenadas x para alinear a la derecha
+    liquid_level_x = width - liquid_level_text.get_width() - 10
+    orificio_size_x = width - orificio_size_text.get_width() - 10
+    elapsed_time_x = width - elapsed_time_text.get_width() - 10
+
+    # Renderizar las variables en pantalla
+    screen.blit(liquid_level_text, (liquid_level_x, 70))
+    screen.blit(orificio_size_text, (orificio_size_x, 100))
+    screen.blit(elapsed_time_text, (elapsed_time_x, 130))
 
     # Actualizar la pantalla
     pygame.display.flip()
